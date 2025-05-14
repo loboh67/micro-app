@@ -66,6 +66,12 @@ spec:
             value: "currencyservice:7000"
           - name: CART_SERVICE_ADDR
             value: "cartservice:7070"
+          - name: ENABLE_LEAK
+            value: "0"
+          - name: LEAK_SIZE_MB
+            value: "2"
+          - name: LEAK_INTERVAL_SEC
+            value: "5"          
           resources:
             requests:
               cpu: 100m
