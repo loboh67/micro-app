@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/profiler"
@@ -141,6 +142,36 @@ func main() {
 	pb.RegisterCheckoutServiceServer(srv, svc)
 	healthpb.RegisterHealthServer(srv, svc)
 	log.Infof("starting to listen on tcp: %q", lis.Addr().String())
+
+	if os.Getenv("ENABLE_LEAK") == "1" {
+		log.Warn("💥 Memory leak enabled — leaking memory gradually...")
+
+		leakSizeMB := 10
+		leakInterval := 10 * time.Second
+
+		if val := os.Getenv("LEAK_SIZE_MB"); val != "" {
+			if n, err := strconv.Atoi(val); err == nil {
+				leakSizeMB = n
+			}
+		}
+
+		log.Infof("Leaking %dMB every %v", leakSizeMB, leakInterval)
+
+		go func() {
+			var leak [][]byte
+			for {
+				chunk := make([]byte, leakSizeMB*1024*1024) // Allocate N MB
+
+				for i := range chunk {
+					chunk[i] = 1
+				}
+
+				leak = append(leak, chunk)
+				time.Sleep(leakInterval)
+			}
+		}()
+	}
+	
 	err = srv.Serve(lis)
 	log.Fatal(err)
 }
