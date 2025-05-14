@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: loadgenerator
   labels:
     app: loadgenerator
 spec:
+  backoffLimit: 0
   selector:
     matchLabels:
       app: loadgenerator
@@ -31,7 +32,7 @@ spec:
     spec:
       serviceAccountName: loadgenerator
       terminationGracePeriodSeconds: 5
-      restartPolicy: Always
+      restartPolicy: Never
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -78,6 +79,7 @@ spec:
           privileged: false
           readOnlyRootFilesystem: true
         image: loadgenerator
+        imagePullPolicy: IfNotPresent
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
